@@ -572,7 +572,23 @@ this.fetchData(data, url, (flashcards) => {
   });
 
 }
+
+getNumberOfCards(jwtToken, sharedFolderID) {
+    const url = 'get-number-of-cards';
+    const data = {
+      jwtToken: jwtToken,
+      sharedFolderID: sharedFolderID
+    };
+    this.fetchData(data, url, (NumberOfCardsData) => {
+      //setCardsStudiedGraph(NumberOfCardsData);
+      console.log("Number of cards data: ", NumberOfCardsData)
+    });
+  }
+
 }
+
+
+
 
 
 

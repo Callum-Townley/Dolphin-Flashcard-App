@@ -101,6 +101,11 @@ UPDATE_SHARED_CARD_PROGRESS_FORMAT = {
     "cardData": []
 }
 
+GET_NUMBER_OF_CARDS_FORMAT = {
+    "jwtToken": "",
+    "sharedFolderID": ""
+}
+
 
 @shared_folders_routes.route("/api/create-shared-folder", methods=["POST"])
 @validate_json(CREATE_SHARED_FOLDER_FORMAT)
@@ -766,6 +771,7 @@ def copy_shared_flashcard_to_personal():
         
 #     except Exception as e:
 #         return jsonify({"error": str(e)}), 500
+
 @shared_folders_routes.route("/api/update-shared-card-progress", methods=["POST"])
 @validate_json(UPDATE_SHARED_CARD_PROGRESS_FORMAT)
 def update_shared_card_progress():
@@ -806,5 +812,64 @@ def update_shared_card_progress():
         
         return jsonify({"success": True, "message": "Card progress updated"}), 200
         
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+
+
+@shared_folders_routes.route("/api/get-number-of-cards", methods=["POST"])
+@validate_json(GET_NUMBER_OF_CARDS_FORMAT)
+def get_number_of_cards():
+    """gets the number of cards each student has studied in all sets of a shared folder"""
+    try:
+        user_id = request.json.get("userID")
+        folder_id = request.json.get("sharedFolderID")
+        
+        # Check if user is member or owner
+        if not db.shared_folders.is_user_member(folder_id, user_id):
+            return jsonify({"error": "Access denied. You must be a member of this shared folder."}), 403
+        
+        # Get folder data
+        folder_data = db.shared_folders.get_shared_folder(folder_id)
+        
+        if folder_data is None:
+            return jsonify({"error": "Shared folder not found"}), 404
+        
+        #gets a list of all the members except the owner
+        owner_id = folder_data.get("owner")
+        
+        members = []
+        for member in folder_data.get("members", []):
+            member_id = member.get("userId")
+            if member_id != owner_id:  # Don't include owner in members list
+                member_user_data = db.users.get_user(member_id)
+                if member_user_data:
+                    progress_data = db.shared_folders.get_user_shared_folder_progress(member_id, folder_id)
+                    cards_studied = 0
+                    for flashcard_set in progress_data.values():
+                        for card in flashcard_set.get("cards", {}).values():
+                            if float(card.get("review_status", 0)) > 0:
+                                cards_studied += 1
+                            
+                    total_cards_studied += cards_studied
+                    student_count += 1
+
+                member_user_data = db.users.get_user(member_id)
+                members.append({
+                "userID": member_id,
+                "name": member_user_data.get("name", "Unknown User"),
+                "cardsStudied": cards_studied
+            })
+        if student_count>0:
+            avg_cards_studied = total_cards_studied / student_count
+        else:
+            avg_cards_studied = 0
+
+        return jsonify({
+            "studentCount": student_count,
+            "averageCardsStudied": avg_cards_studied,
+            "members": members
+        }), 200
+    
     except Exception as e:
         return jsonify({"error": str(e)}), 500
