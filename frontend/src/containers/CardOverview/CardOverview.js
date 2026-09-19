@@ -128,8 +128,7 @@ function CardOverview({
                     paddingRight: "30px",
                     perspective: "1000px",
                     height: height,
-                    maxHeight: "650px",
-                    minHeight:"260px"
+                    minHeight:"100px"
                 }}
                 >
                     {(showTurnOverButton || showResponseOptions && isFlipped === false) &&
