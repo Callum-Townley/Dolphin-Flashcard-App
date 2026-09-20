@@ -53,8 +53,8 @@ function TotalFlashcardBrowser({ folder, flashcardName, flashcardID}) {
 
   return (
     <div>
-    {(flashcardItems.length ==0) ? (
-       <Heading5 text="XP & Streak Heatmap" style={{ padding: "8px" }} />
+    {(flashcardItems.length == 0 && time == true) ? (
+       <Heading5 text="No Flashcards!"/>
   ) :  <div>{ (
   
   <DelayedElement childValue={loadingIcon} child={

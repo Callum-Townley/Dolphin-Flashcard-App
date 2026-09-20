@@ -62,7 +62,8 @@ function CardOverview({
     isInEditPage=false,
     turnable=true,
     previewUrl,
-    CopyPreviewURL
+    CopyPreviewURL,
+    minHeight
 }) {
     let htmlText = text
         .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
@@ -128,7 +129,7 @@ function CardOverview({
                     paddingRight: "30px",
                     perspective: "1000px",
                     height: height,
-                    minHeight:"100px"
+                    minHeight:minHeight
                 }}
                 >
                     {(showTurnOverButton || showResponseOptions && isFlipped === false) &&
